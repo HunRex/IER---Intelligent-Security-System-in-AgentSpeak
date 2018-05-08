@@ -9,5 +9,4 @@
 /* Plans */
 
 
-+hello[source(A)] <- .print("Woooof,( I received 'hello' from )",A); 
-.send(guard, tell, hello).
++hello[source(A)] <- .print("Woooof,( I received 'hello' from )",A).

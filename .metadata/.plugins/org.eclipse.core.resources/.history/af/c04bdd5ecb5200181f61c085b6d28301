@@ -9,4 +9,3 @@
 /* Plans */
 
 +!start : true <- .send(dog , tell, hello).
-+hello[source(A)] <- .print("Hello "," Hello ",A).
