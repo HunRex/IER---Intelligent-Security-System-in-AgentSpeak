@@ -1,0 +1,11 @@
+MAS intelligent_security_IER_HF {
+
+	infrastructure: Centralised
+
+	agents:
+		motionSensor agentArchClass c4jason.CAgentArch #4;
+		agent1 sample_agent;
+
+	aslSourcePath:
+		"src/asl";
+}
