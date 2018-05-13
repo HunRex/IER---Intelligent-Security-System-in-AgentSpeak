@@ -8,7 +8,8 @@ MAS intelligent_security_IER_HF {
 		camera #3;
 		dog;
 		guard;
-		motionSensor #6;
+		motionSensor;
+		agent1 sample_agent;
 
 	aslSourcePath:
 		"src/asl";

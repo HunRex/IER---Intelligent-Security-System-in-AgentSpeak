@@ -13,4 +13,4 @@ pos(self,1,1).
 /* Plans */
 
 +!start : true <- .print("hello world, I am a motion sensor.").
-+!detectRobber : true <- .send(camera1, tell, pos(1,1)). // ha észleli a betörõt, elküldi a kameráknak a pozícióját
++!detectRobber : true <- .send(camera, tell, pos(1,1)). // ha észleli a betörõt, elküldi a kameráknak a pozícióját

@@ -2,11 +2,9 @@
 
 /* Initial beliefs and rules */
 
-
 /* Initial goals */
 
 !start.
-!detectRobber.
 
 /* Plans */
 
