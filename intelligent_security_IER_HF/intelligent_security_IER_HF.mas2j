@@ -5,10 +5,10 @@ MAS intelligent_security_IER_HF {
 	environment: SecurityEnvironment
 	
 	agents:
-		camera #3;
-		dog;
-		guard;
-		motionSensor #6;
+		//camera #3;
+		dog agentArchClass intelligent_security_IER_HF.Dog;
+		//guard;
+		//motionSensor #6;
 
 	aslSourcePath:
 		"src/asl";
