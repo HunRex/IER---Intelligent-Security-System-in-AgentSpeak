@@ -2,11 +2,11 @@ MAS intelligent_security_IER_HF {
 
 	infrastructure: Centralised
 	
-	environment: SecurityEnvironment
+	environment: intelligent_security_IER_HF.SecurityEnvironment
 	
 	agents:
 		//camera #3;
-		dog agentArchClass intelligent_security_IER_HF.Dog;
+		dog;
 		//guard;
 		//motionSensor #6;
 
