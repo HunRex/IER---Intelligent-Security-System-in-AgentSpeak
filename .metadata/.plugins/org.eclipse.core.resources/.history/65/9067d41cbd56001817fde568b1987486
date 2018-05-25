@@ -1,0 +1,7 @@
+package intelligent_security_IER_HF;
+
+import jason.environment.Environment;
+
+public class SecurityEnvironment extends Environment{
+
+}

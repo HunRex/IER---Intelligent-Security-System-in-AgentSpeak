@@ -1,0 +1,16 @@
+// Agent motionSensor in project intelligent_security_IER_HF
+
+/* Initial beliefs and rules */
+
+pos(camera1,2,2).  //tudja hogy kamera1 a 2,2 pozícióban van
+pos(self,1,1).
+
+/* Initial goals */
+
+
+!detectRobber.  //elsõdleges cél a betörõ észlelése
+
+/* Plans */
+
++!start : true <- .print("hello world, I am a motion sensor.").
++!detectRobber : true <- .send(camera, tell, pos(1,1)). // ha észleli a betörõt, elküldi a kameráknak a pozícióját

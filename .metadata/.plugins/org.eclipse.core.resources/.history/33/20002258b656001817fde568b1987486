@@ -1,0 +1,15 @@
+MAS intelligent_security_IER_HF {
+
+	infrastructure: Centralised
+	
+	
+	agents:
+		camera #3;
+		dog;
+		guard;
+		motionSensor;
+		agent1 sample_agent;
+
+	aslSourcePath:
+		"src/asl";
+}

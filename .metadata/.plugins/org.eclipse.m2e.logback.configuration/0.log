@@ -1,0 +1,16 @@
+2018-05-02 20:35:31,617 [Worker-0] INFO  c.g.t.t.d.PublishedGradleVersions - Gradle version information cache is not available. Remote download required.
+2018-05-02 20:55:33,931 [Worker-2] INFO  c.g.t.t.d.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+2018-05-02 21:08:21,565 [Start Help Server] INFO  org.eclipse.jetty.util.log - Logging initialized @778624ms to org.eclipse.jetty.util.log.Slf4jLog
+2018-05-02 21:08:21,747 [Start Help Server] INFO  org.eclipse.jetty.server.Server - jetty-9.4.8.v20171121, build timestamp: 2017-11-21T22:27:37+01:00, git hash: 82b8fb23f757335bb3329d540ce37a2a2615f0a8
+2018-05-02 21:08:21,775 [Start Help Server] INFO  org.eclipse.jetty.server.session - DefaultSessionIdManager workerName=node0
+2018-05-02 21:08:21,776 [Start Help Server] INFO  org.eclipse.jetty.server.session - No SessionScavenger set, using defaults
+2018-05-02 21:08:21,778 [Start Help Server] INFO  org.eclipse.jetty.server.session - Scavenging every 600000ms
+2018-05-02 21:08:21,812 [Start Help Server] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@16150589{/help,null,AVAILABLE}
+2018-05-02 21:08:21,849 [Start Help Server] INFO  o.e.jetty.server.AbstractConnector - Started ServerConnector@47ca8e71{HTTP/1.1,[http/1.1]}{127.0.0.1:59071}
+2018-05-02 21:08:21,850 [Start Help Server] INFO  org.eclipse.jetty.server.Server - Started @778911ms
+2018-05-02 23:04:58,640 [Stop Help Server] INFO  o.e.jetty.server.AbstractConnector - Stopped ServerConnector@47ca8e71{HTTP/1.1,[http/1.1]}{127.0.0.1:0}
+2018-05-02 23:04:58,641 [Stop Help Server] INFO  org.eclipse.jetty.server.session - Stopped scavenging
+2018-05-02 23:04:58,652 [Stop Help Server] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@16150589{/help,null,UNAVAILABLE}
+2018-05-08 14:48:02,833 [Worker-1] INFO  c.g.t.t.d.PublishedGradleVersions - Gradle version information cache is out-of-date. Trying to update.
+2018-05-08 16:23:30,229 [Worker-18] INFO  c.g.t.t.d.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+2018-05-13 16:02:59,975 [Worker-24] INFO  c.g.t.t.d.PublishedGradleVersions - Gradle version information cache is out-of-date. Trying to update.
