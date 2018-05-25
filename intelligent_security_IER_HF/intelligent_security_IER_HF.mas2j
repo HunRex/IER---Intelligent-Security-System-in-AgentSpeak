@@ -5,7 +5,7 @@ MAS intelligent_security_IER_HF {
 	environment: intelligent_security_IER_HF.SecurityEnvironment
 	
 	agents:
-		//camera #3;
+		camera #4;
 		dog;
 		//guard;
 		//motionSensor #6;

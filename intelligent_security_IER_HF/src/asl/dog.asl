@@ -16,7 +16,7 @@
 						next(step);
 						!checkBurgler.	
 						
-+!checkBurgler: not burgler(outside) <- .print("bent van rossz")
++!checkBurgler: not burgler(outside) <- 
 						!signalburgler.										
 				
 @lg[atomic]
