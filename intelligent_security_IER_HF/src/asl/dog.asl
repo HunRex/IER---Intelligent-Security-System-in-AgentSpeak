@@ -12,24 +12,26 @@
 
 
  
-+!checkBurgler: burgler(outside) <- .print("nincs bent")
++!checkBurgler: burgler(outside) <-
 						next(step);
-						!checkBurgler.	
+					!checkBurgler.
 						
-+!checkBurgler: not burgler(outside) <- 
++!checkBurgler: not burgler(outside) <- //.print("bent van");
+						.send(guard, tell, inside);
 						!signalburgler.										
-				
+/*				
 @lg[atomic]
 +burgler(inside) : true
    <- !signalburgler.
-   
+   */
 
 					
-+!signalburgler : burgler(inside) <- .print("bent van")
++!signalburgler : burgler(inside) <- 
 					next(step);
 					!signalburgler.
 					
-+!signalburgler :not burgler(inside) <- 
++!signalburgler :not burgler(inside) <-  //.print("nincs bent");
+					.send(guard, tell, outside);
 					!checkBurgler.
 				
 
