@@ -27,10 +27,13 @@ public class SecurityEnvironment extends Environment {
 	public static final int Burg = 16; // Burgler code in grid model
 	public static final int SecP = 32; // Secured place code in grid model
 	public static final int CamV = 8; // camera viewpoint code in grid model
+	public static final int Alar = 64; // alarm range code in grid model
 	public static int Burgx = 3; // Burgler position on x koord
 	public static int Burgy = 0; // Burgler position on y koord
 	public static final Term step = Literal.parseLiteral("next(step)");
 	public static final Term search = Literal.parseLiteral("random(search)");
+	public static final Term stay = Literal.parseLiteral("stay(there)");
+	public static final Term scare = Literal.parseLiteral("scare(burgler)");
 	public static boolean end = false;
 	public static char dir;
 	static Logger logger = Logger.getLogger(SecurityEnvironment.class.getName());
@@ -38,6 +41,7 @@ public class SecurityEnvironment extends Environment {
 	private SecModell model;
 	private SecView view;
 	public SecuredPlace securedPlace;
+	private Thread thread;
 
 	@Override
 	public void init(final String[] args) {
@@ -46,7 +50,8 @@ public class SecurityEnvironment extends Environment {
 		view = new SecView(model);
 		model.setView(view);
 		updatePercepts();
-		// new Thread(new BurglerController()).start();
+		thread = new Thread(new BurglerController());
+		thread.start(); // moving burgler on new thread
 
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
 			switch (ke.getID()) {
@@ -70,7 +75,7 @@ public class SecurityEnvironment extends Environment {
 
 	@Override
 	public boolean executeAction(final String ag, final Structure action) {
-		logger.info(ag + " doing: " + action);
+		// logger.info(ag + " doing: " + action); //write consol what action is done
 		try {
 			if (action.equals(step)) {
 				// model.nextstep('d');
@@ -79,6 +84,18 @@ public class SecurityEnvironment extends Environment {
 				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
 				final int d = (int) ((NumberTerm) action.getTerm(1)).solve();
 				model.search(ag);
+			} else if (action.getFunctor().equals("followburgler")) {
+				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
+				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
+				model.follow(ag, x, y);
+			} else if (action.getFunctor().equals("scare_burgler")) {
+				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
+				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
+				model.scareburgler(x, y);
+			} else if (action.equals(stay)) {
+				// nothing
+			} else if (action.equals(scare)) {
+				model.scare(ag);
 			} else {
 				return true;
 			}
@@ -102,7 +119,7 @@ public class SecurityEnvironment extends Environment {
 		public void run() {
 			while (!end) {
 				model.nextstep(dir);
-				view.repaint();
+				// view.repaint();
 				try {
 					Thread.sleep(200);
 				} catch (final InterruptedException e) {
@@ -127,6 +144,17 @@ public class SecurityEnvironment extends Environment {
 			addPercept(c.id, Literal.parseLiteral("position(self," + c.posX + "," + c.posY + ")"));
 			addPercept(c.id, Literal.parseLiteral("face(" + c.faceDir + ")"));
 			addPercept(c.id, Literal.parseLiteral("turn(" + c.degree + ")"));
+			if (c.inside(Burgx, Burgy)) {
+				addPercept(c.id, Literal.parseLiteral("position(burg," + Burgx + "," + Burgy + ")"));
+
+				if (!containsPercept(c.id, Literal.parseLiteral("see(burg)"))) {
+					addPercept(c.id, Literal.parseLiteral("see(burg)"));
+				}
+			} else {
+				if (containsPercept(c.id, Literal.parseLiteral("see(burg)"))) {
+					removePercept(c.id, Literal.parseLiteral("see(burg)"));
+				}
+			}
 		}
 
 		informAgsEnvironmentChanged();
@@ -145,19 +173,27 @@ public class SecurityEnvironment extends Environment {
 	class SecModell extends GridWorldModel {
 		SecuredPlace securedPlace;
 		Collection<Camera> cameras;
+		Collection<Alarm> alarms;
 		Random random = new Random(System.currentTimeMillis());
+		final int nomOfAlarms = 4;
 		final int numOfCameras = 4;
+		final int alarmData[] = { GSize / 2 + 3, GSize / 4, 3, GSize / 4, GSize / 2 - 3, 3, GSize * 3 / 4,
+				GSize / 2 - 3, 3, GSize / 2 - 3, GSize / 4, 3 };
 		final int camPos[] = { GSize / 2, GSize / 4, 3 * GSize / 4, GSize / 2, GSize / 2, 3 * GSize / 4, GSize / 4,
 				GSize / 2 };
 
 		private SecModell(final SecuredPlace securedPlace, final Collection<Camera> cameras) {
 			super(GSize, GSize, 10);
 			this.cameras = cameras;
+			alarms = new ArrayList<>();
 			this.securedPlace = securedPlace;
+			for (int i = 0; i < nomOfAlarms; i++) {
+				this.alarms.add(
+						new Alarm("alarm" + (i + 1), alarmData[3 * i], alarmData[3 * i + 1], alarmData[3 * i + 2]));
+				setAgPos(i + numOfCameras, alarmData[3 * i], alarmData[3 * i + 1]);
+			}
 			for (int i = 0; i < numOfCameras; i++) {
-				System.out.println(i);
 				this.cameras.add(new Camera("camera" + (i + 1), camPos[2 * i], camPos[2 * i + 1], i, 1));
-				System.out.println("camera" + (i + 1));
 				setAgPos(i, camPos[2 * i], camPos[2 * i + 1]);
 			}
 			add(Burg, Burgx, Burgy);
@@ -171,6 +207,43 @@ public class SecurityEnvironment extends Environment {
 							add(CamV, x, y);
 						}
 					}
+					for (final Alarm a : this.alarms) {
+						if (a.inside(x, y)) {
+							add(Alar, x, y);
+						}
+					}
+				}
+			}
+		}
+
+		public void scare(final String ag) {
+			// TODO Auto-generated method stub
+			for (final Alarm a : alarms) {
+				if (a.id.equals(ag)) {
+					if (a.inside(Burgx, Burgy)) {
+						logger.info("Burgler have been caught");
+						thread.stop();
+					}
+				}
+			}
+		}
+
+		public void scareburgler(final int x, final int y) {
+			// TODO Auto-generated method stub
+			for (final Alarm a : alarms) {
+				if (a.inside(x, y)) {
+					addPercept("guard", Literal.parseLiteral("scare(possible)"));
+					addPercept("guard", Literal.parseLiteral("alarm(" + a.id + ")"));
+					return;
+				}
+			}
+		}
+
+		public void follow(final String ag, final int x, final int y) {
+			// TODO Auto-generated method stub
+			for (final Camera c : cameras) {
+				if (c.id.equals(ag)) {
+					followSpin(c, x, y);
 				}
 			}
 		}
@@ -184,7 +257,66 @@ public class SecurityEnvironment extends Environment {
 			}
 		}
 
+		public void followSpin(final Camera cam, final int bx, final int by) {
+			final int xdir = bx - cam.posX;
+			final int ydir = by - cam.posY;
+			switch (cam.degree) {
+			case 0:
+				if (xdir > 0)
+					spin(cam, 1);
+				else if (xdir < 0)
+					spin(cam, 3);
+				else
+					spin(cam, 2);
+				break;
+			case 1:
+				if (ydir > 0)
+					spin(cam, 2);
+				else if (ydir < 0)
+					spin(cam, 0);
+				else
+					spin(cam, 3);
+				break;
+			case 2:
+				if (xdir > 0)
+					spin(cam, 1);
+				else if (xdir < 0)
+					spin(cam, 3);
+				else
+					spin(cam, 0);
+				break;
+			case 3:
+				if (ydir > 0)
+					spin(cam, 2);
+				else if (ydir < 0)
+					spin(cam, 0);
+				else
+					spin(cam, 1);
+				break;
+			}
+		}
+
 		public void randSpin(final Camera cam) {
+
+			switch (random.nextInt() % 3) {
+			case 0:
+				if (cam.degree == 0)
+					spin(cam, 3);
+				else
+					spin(cam, cam.degree - 1);
+				break;
+			case 1:
+				if (cam.degree == 3)
+					spin(cam, 0);
+				else
+					spin(cam, cam.degree + 1);
+				break;
+			case 2: // not move
+				break;
+			}
+		}
+
+		public void spin(final Camera cam, final int degreeNew) {
 			for (int x = 0; x < GSize; x++) {
 				for (int y = 0; y < GSize; y++) {
 					if (cam.inside(x, y)) {
@@ -192,22 +324,7 @@ public class SecurityEnvironment extends Environment {
 					}
 				}
 			}
-			switch (random.nextInt() % 3) {
-			case 0:
-				if (cam.degree == 0)
-					cam.degree = 3;
-				else
-					cam.degree--;
-				break;
-			case 1:
-				if (cam.degree == 3)
-					cam.degree = 1;
-				else
-					cam.degree++;
-				break;
-			case 2: // not move
-				break;
-			}
+			cam.degree = degreeNew;
 			for (int x = 0; x < GSize; x++) {
 				for (int y = 0; y < GSize; y++) {
 					if (cam.inside(x, y)) {
@@ -262,17 +379,19 @@ public class SecurityEnvironment extends Environment {
 
 		@Override
 		public void draw(final Graphics g, final int x, final int y, final int object) {
-
+			g.setFont(defaultFont);
 			switch (object) {
 			case SecurityEnvironment.Burg:
 				drawBurg(g, x, y);
 				break;
 			case SecurityEnvironment.SecP:
-				if (!(x == Burgx && y == Burgy))
-					drawSecP(g, x, y);
+				drawSecP(g, x, y);
 				break;
 			case SecurityEnvironment.CamV:
 				drawCamV(g, x, y);
+				break;
+			case SecurityEnvironment.Alar:
+				drawAlar(g, x, y);
 				break;
 			}
 		}
@@ -287,6 +406,11 @@ public class SecurityEnvironment extends Environment {
 		public void drawCamV(final Graphics g, final int x, final int y) {
 			g.setColor(Color.blue);
 			g.drawString("x", convertCoordinateX(x) + 5, convertCoordinateY(y) + 5);
+		}
+
+		public void drawAlar(final Graphics g, final int x, final int y) {
+			g.setColor(Color.orange);
+			g.drawString("a", convertCoordinateX(x) + 10, convertCoordinateY(y));
 		}
 
 		public void drawBurg(final Graphics g, final int x, final int y) {
@@ -338,7 +462,7 @@ public class SecurityEnvironment extends Environment {
 			faceDir = fdir;
 			degree = cdegree;
 			id = cid;
-			distance = 4; // how far the camera looks
+			distance = 6; // how far the camera looks
 		}
 
 		public boolean inside(final int X, final int Y) {
@@ -363,6 +487,22 @@ public class SecurityEnvironment extends Environment {
 			}
 		}
 
+	}
+
+	public class Alarm {
+		String id;
+		int posX, posY, range;
+
+		public Alarm(final String aid, final int xpos, final int ypos, final int arange) {
+			id = aid;
+			posX = xpos;
+			posY = ypos;
+			range = arange;
+		}
+
+		public boolean inside(final int X, final int Y) {
+			return Math.abs(X - posX) < range && Math.abs(Y - posY) < range;
+		}
 	}
 
 	public SecurityEnvironment() {
