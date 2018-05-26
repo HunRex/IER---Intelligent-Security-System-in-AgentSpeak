@@ -8,6 +8,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
@@ -21,7 +23,7 @@ import jason.environment.Environment;
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.GridWorldView;
 
-public class SecurityEnvironment extends Environment {
+public class SecurityEnvironment extends Environment{
 
 	public static final int GSize = 30; // grid size
 	public static final int Burg = 16; // Burgler code in grid model
@@ -75,6 +77,7 @@ public class SecurityEnvironment extends Environment {
 			}
 			return false;
 		});
+
 	}
 
 	@Override
@@ -83,10 +86,7 @@ public class SecurityEnvironment extends Environment {
 		try {
 			if (action.equals(step)) {
 				// model.nextstep('d');
-			} else if (action.getFunctor().equals("camera_search")) {
-				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
-				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
-				final int d = (int) ((NumberTerm) action.getTerm(1)).solve();
+			} else if (action.equals(Literal.parseLiteral("camera_search(search)"))) {
 				model.search(ag);
 			} else if (action.getFunctor().equals("followburgler")) {
 				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
@@ -100,7 +100,11 @@ public class SecurityEnvironment extends Environment {
 				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
 				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
 				model.catch_burgler(x, y);
-			} else if (action.equals(stay)) {
+			} else if (action.getFunctor().equals("detectMotion")) {
+				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
+				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
+				model.detectMotion(ag, x, y);
+			}else if (action.equals(stay)) {
 				// nothing
 			} else if (action.equals(scare)) {
 				model.scare(ag);
@@ -244,12 +248,32 @@ public class SecurityEnvironment extends Environment {
 			}
 		}
 
+		public void detectMotion(String ag, int x, int y) {
+			// TODO Auto-generated method stub
+			for(final MotionSensor s: sensors) {
+				if (s.id.equals(ag)) {
+						if(s.inside(Burgx, Burgy) && ((Burgx != x) || (Burgy != y))) {
+						logger.info("Something is moving here!");
+						addPercept(ag, Literal.parseLiteral("pos(something,"+ Burgx + "," + Burgy + ")" ));
+						if (!containsPercept(s.id, Literal.parseLiteral("something(inside)"))) {
+							addPercept(ag, Literal.parseLiteral("something(inside)"));
+						}
+						} else {
+							if (containsPercept(s.id, Literal.parseLiteral("something(inside)"))) {
+								removePercept(ag, Literal.parseLiteral("something(inside)"));
+							}
+							
+						}
+				}
+			}
+		}
+
 		public void scare(final String ag) {
 			// TODO Auto-generated method stub
 			for (final Alarm a : alarms) {
 				if (a.id.equals(ag)) {
 					if (a.inside(Burgx, Burgy)) {
-						logger.info("Burgler have been caught");
+						logger.info("Burgler have been scared away");
 						thread.stop();
 					}
 				}
@@ -380,6 +404,11 @@ public class SecurityEnvironment extends Environment {
 
 				}
 				add(Guard, Guardx, Guardy);
+				if(Math.abs(Guardx - Burgx) <= 1 && Math.abs(Guardy - Burgy) <= 1) {
+					thread.stop();
+					addPercept("guard", Literal.parseLiteral("burgler_caught"));
+					
+				}
 			}
 		}
 
@@ -448,7 +477,11 @@ public class SecurityEnvironment extends Environment {
 			case SecurityEnvironment.Sensor:
 				drawSensor(g, x, y);
 				break;
+			default: 
+				drawSecP(g, x, y);
+				break;
 			}
+			
 		}
 
 		public void drawSecP(final Graphics g, final int x, final int y) {
@@ -469,6 +502,8 @@ public class SecurityEnvironment extends Environment {
 		}
 
 		public void drawBurg(final Graphics g, final int x, final int y) {
+			g.setColor(new Color(238, 238, 238));
+
 			super.drawAgent(g, x, y, Color.RED, -1);
 			g.setColor(Color.BLACK);
 			drawString(g, x, y, defaultFont, "B");
@@ -606,16 +641,6 @@ public class SecurityEnvironment extends Environment {
 		public boolean inside(final int X, final int Y) {
 			return Math.abs(X - posX) < range && Math.abs(Y - posY) < range;
 		}
-	}
-
-	public SecurityEnvironment() {
-		final Literal v = createLiteral("name", createNumber(-2));
-		System.out.println(v);
-		System.out.println("variable: " + Literal.parseLiteral("x(10)"));
-		addPercept("dog", v);
-	}
-
-	public void setup() {
 	}
 
 }

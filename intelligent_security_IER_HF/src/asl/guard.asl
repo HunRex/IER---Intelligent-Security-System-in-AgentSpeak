@@ -2,7 +2,7 @@
 	
 	/* Initial beliefs and rules */
 	
-	position(Self, X,Y).
+	+position(Self, X,Y).
 	
 	
 	/* Initial goals */
@@ -17,21 +17,26 @@
 														 scare_burgler(X, Y);
 														 !scareBurgler.
 														 
-	+burglerat(X, Y)[source(A)] : burgler(inside) <- .print("I see Ya(",X, ":", Y,") from ", A);
+	+burglerat(X, Y)[source(A)] : burgler(inside) & not burgler_caught <- .print("I see Ya(",X, ":", Y,") from ", A);
 														 catch_burgler(X, Y);
-														 +pos(burg, X, Y);
-														 !catchBurgler(0).													 
+														 -burglerat(X, Y)[source(A)];.											 
+														 
+	+burglerat(X, Y)[source(A)] : burgler(inside) & burgler_caught <- 
+														.print("Burgler caught");.										 
 														 
 	
-	+!catchBurgler(C): burgler(inside) & (C < 4) <- ?pos(burgler, X, Y);
-										catch_burgler(X, Y);
-										.print("Elkapom!");
-										.print(C);
-										!catchBurgler(C + 1).
-									
-	+!catchBurgler(C): burgler(inside) & (C >= 4) <- stay(there).
-	
-	
+	+somethingat(X, Y)[source(A)] : not burgler(inside) <- .print("I see Ya(",X, ":", Y,") from ", A);
+														 scare_burgler(X, Y);
+														 !scareBurgler.
+														 
+	+somethingat(X, Y)[source(A)] : burgler(inside) & not burgler_caught <- .print("I see Ya(",X, ":", Y,") from ", A);
+														 catch_burgler(X, Y);
+														 .print("I see Ya(",X, ":", Y,") from ", A);
+														 -somethingat(X, Y)[source(A)].
+														 
+ 	+somethingat(X, Y)[source(A)] : burgler(inside) & burgler_caught <- 
+														.print("Burgler caught");.		
+														 
 	+!scareBurgler: scare(possible) <- ?alarm(A);
 									  -scare(possible);
 									  .send(A, tell, scare).
@@ -39,7 +44,9 @@
 	+!scareBurgler: not scare(possible) <- .print("nem volt mar ott").
 									  
 	
-	+inside : true <- +burgler(inside).
+	+inside[source(A)] : true <- +burgler(inside);
+						-outside[source(A)].
 	
-	+outside : true <- -burgler(inside).
+	+outside[source(A)] : true <- -burgler(inside);
+						-inside[source(A)].
 

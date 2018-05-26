@@ -15,7 +15,7 @@ position(Self, X,Y).
 									?face(Dir);
 									?turn(Degree);
 									?position(self, X, Y);
-									camera_search(X, Y, Dir, Degree);
+									camera_search(search);
 									!searchBurgler.
 									
 +!searchBurgler : see(Burg) <- 

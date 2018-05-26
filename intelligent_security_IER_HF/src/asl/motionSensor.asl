@@ -2,12 +2,21 @@
 
 /* Initial beliefs and rules */
 
+pos(something, -1, -1).
+
 /* Initial goals */
 
 
-!detectRobber.  //elsõdleges cél a betörõ észlelése
+!detect.  //elsõdleges cél a betörõ észlelése
 
 /* Plans */
 
-+!start : true <- .print("hello world, I am a motion sensor.").
-//+!detectRobber : true <- .send(camera1, tell, pos(1,1)). // ha észleli a betörõt, elküldi a kameráknak a pozícióját
+
++!detect: not something(inside) <- ?pos(something, X, Y);
+									detectMotion(X, Y);
+									!detect.
+
++!detect :something(inside)  <- ?pos(something, X, Y)
+								.send(guard, tell, somethingat(X,Y));
+								detectMotion(X, Y);
+								!detect.
