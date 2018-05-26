@@ -10,7 +10,7 @@ MAS intelligent_security_IER_HF {
 		dog;
 		guard;
 		//guard;
-		//motionSensor #6;
+		motionSensor #4;
 
 	aslSourcePath:
 		"src/asl";

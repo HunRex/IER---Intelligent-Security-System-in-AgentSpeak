@@ -25,11 +25,15 @@ public class SecurityEnvironment extends Environment {
 
 	public static final int GSize = 30; // grid size
 	public static final int Burg = 16; // Burgler code in grid model
+	public static final int Guard = 128; //Guard code in grid model
+	public static final int Sensor = 256; //Guard code in grid model
 	public static final int SecP = 32; // Secured place code in grid model
 	public static final int CamV = 8; // camera viewpoint code in grid model
 	public static final int Alar = 64; // alarm range code in grid model
 	public static int Burgx = 3; // Burgler position on x koord
 	public static int Burgy = 0; // Burgler position on y koord
+	public static int Guardx = 14;
+	public static int Guardy = 14;
 	public static final Term step = Literal.parseLiteral("next(step)");
 	public static final Term search = Literal.parseLiteral("random(search)");
 	public static final Term stay = Literal.parseLiteral("stay(there)");
@@ -46,7 +50,7 @@ public class SecurityEnvironment extends Environment {
 	@Override
 	public void init(final String[] args) {
 		securedPlace = new SecuredPlace(GSize);
-		model = new SecModell(securedPlace, new ArrayList<Camera>());
+		model = new SecModell(securedPlace, new ArrayList<Camera>(), new ArrayList<MotionSensor>());
 		view = new SecView(model);
 		model.setView(view);
 		updatePercepts();
@@ -92,6 +96,10 @@ public class SecurityEnvironment extends Environment {
 				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
 				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
 				model.scareburgler(x, y);
+			} else if (action.getFunctor().equals("catch_burgler")) {
+				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
+				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
+				model.catch_burgler(x, y);
 			} else if (action.equals(stay)) {
 				// nothing
 			} else if (action.equals(scare)) {
@@ -174,18 +182,25 @@ public class SecurityEnvironment extends Environment {
 		SecuredPlace securedPlace;
 		Collection<Camera> cameras;
 		Collection<Alarm> alarms;
+		Collection<MotionSensor> sensors;
+		Guard guard;
 		Random random = new Random(System.currentTimeMillis());
 		final int nomOfAlarms = 4;
 		final int numOfCameras = 4;
+		final int numOfMotionSensors = 4;
 		final int alarmData[] = { GSize / 2 + 3, GSize / 4, 3, GSize / 4, GSize / 2 - 3, 3, GSize * 3 / 4,
 				GSize / 2 - 3, 3, GSize / 2 - 3, GSize / 4, 3 };
 		final int camPos[] = { GSize / 2, GSize / 4, 3 * GSize / 4, GSize / 2, GSize / 2, 3 * GSize / 4, GSize / 4,
 				GSize / 2 };
+		
+		final int sensorPos[] = { GSize / 2 + 3, GSize / 4, 3, GSize / 4, GSize / 2 - 3, 3, GSize * 3 / 4,
+				GSize / 2 - 3, 3, GSize / 2 - 3, GSize / 4, 3 };
 
-		private SecModell(final SecuredPlace securedPlace, final Collection<Camera> cameras) {
-			super(GSize, GSize, 10);
+		private SecModell(final SecuredPlace securedPlace, final Collection<Camera> cameras, final Collection<MotionSensor> sensors) {
+			super(GSize, GSize, 15);
 			this.cameras = cameras;
 			alarms = new ArrayList<>();
+			this.sensors = sensors;
 			this.securedPlace = securedPlace;
 			for (int i = 0; i < nomOfAlarms; i++) {
 				this.alarms.add(
@@ -196,6 +211,12 @@ public class SecurityEnvironment extends Environment {
 				this.cameras.add(new Camera("camera" + (i + 1), camPos[2 * i], camPos[2 * i + 1], i, 1));
 				setAgPos(i, camPos[2 * i], camPos[2 * i + 1]);
 			}
+			for (int i = 0; i < numOfMotionSensors; i++) {
+				this.sensors.add(new MotionSensor("msensor" + (i + 1), sensorPos[3 * i], sensorPos[3 * i + 1], sensorPos[3 * i + 2]));
+				setAgPos(i, sensorPos[2 * i], sensorPos[2 * i + 1]);
+			}
+			
+			add(Guard , Guardx, Guardy);
 			add(Burg, Burgx, Burgy);
 			for (int x = 0; x < GSize; x++) {
 				for (int y = 0; y < GSize; y++) {
@@ -210,6 +231,11 @@ public class SecurityEnvironment extends Environment {
 					for (final Alarm a : this.alarms) {
 						if (a.inside(x, y)) {
 							add(Alar, x, y);
+						}
+					}
+					for (final MotionSensor s : this.sensors) {
+						if (s.inside(x, y)) {
+							add(Sensor, x, y);
 						}
 					}
 				}
@@ -333,6 +359,27 @@ public class SecurityEnvironment extends Environment {
 				}
 			}
 		}
+		
+		public void catch_burgler(final int x, final int y) {
+			if(model.hasObject(Guard, Guardx, Guardy)) {
+				remove(Guard, Guardx, Guardy);
+				if(Guardx < x) {
+					Guardx = Guardx + 1;
+				} else if(Guardx > x){
+					Guardx = Guardx - 1;
+				} else {
+					
+				}
+				if(Guardy < y) {
+					Guardy = Guardy + 1;
+				} else if(Guardy > y) {
+					Guardy = Guardy - 1;
+				} else {
+					
+				}
+				add(Guard, Guardx, Guardy);
+			}
+		}
 
 		public void nextstep(final char dir) {
 			// TODO Auto-generated method stub
@@ -393,6 +440,12 @@ public class SecurityEnvironment extends Environment {
 			case SecurityEnvironment.Alar:
 				drawAlar(g, x, y);
 				break;
+			case SecurityEnvironment.Guard:
+				drawGuard(g, x, y);
+				break;
+			case SecurityEnvironment.Sensor:
+				drawSensor(g, x, y);
+				break;
 			}
 		}
 
@@ -418,6 +471,19 @@ public class SecurityEnvironment extends Environment {
 			g.setColor(Color.BLACK);
 			drawString(g, x, y, defaultFont, "B");
 		}
+		
+		public void drawGuard(final Graphics g, final int x, final int y) {
+			super.drawAgent(g, x, y, Color.GREEN, -1);
+			g.setColor(Color.BLACK);
+			drawString(g, x, y, defaultFont, "G");
+		}
+		
+		public void drawSensor(final Graphics g, final int x, final int y) {
+		//	g.drawOval(x, y, 100, 100);
+			//super.drawAgent(g, x, y, Color.GREEN, -1);
+			g.setColor(Color.BLACK);
+			drawString(g, x, y, defaultFont, "S");
+		}
 
 		public int convertCoordinateX(final int i) { // left coord of grid slot
 			return 800 / GSize * i;
@@ -439,6 +505,23 @@ public class SecurityEnvironment extends Environment {
 
 		public boolean inside(final int x, final int y) {
 			return x > start && x < start + size && y > start && y < start + size;
+		}
+	}
+	
+	public class Guard {
+		int posX, posY;
+		String id;
+		
+		public Guard() {
+			posX = 0;
+			posY = 0;
+			id = "";
+		}
+		
+		public Guard(final String gid, final int x, final int y) {
+			posX = x;
+			posY = y;
+			id = gid;
 		}
 	}
 
@@ -487,6 +570,26 @@ public class SecurityEnvironment extends Environment {
 			}
 		}
 
+	}
+	
+	public class MotionSensor {
+		String id;
+		int posX, posY, range;
+
+		public MotionSensor(final String aid, final int xpos, final int ypos, final int arange) {
+			id = aid;
+			posX = xpos;
+			posY = ypos;
+			range = arange;
+		}
+		
+		
+
+		public boolean inside(final int X, final int Y) {
+			double l = (((posX-X)*(posX-X)) + ((posY-Y)*(posY-Y)));
+			double distance = Math.sqrt(l);
+			return distance < range;
+		}
 	}
 
 	public class Alarm {

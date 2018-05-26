@@ -2,8 +2,7 @@
 
 /* Initial beliefs and rules */
 
-pos(camera1,2,2).  //tudja hogy kamera1 a 2,2 pozícióban van
-pos(self,1,1).
+position(Self, X,Y).
 
 /* Initial goals */
 

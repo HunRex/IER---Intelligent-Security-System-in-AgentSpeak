@@ -36,5 +36,6 @@ position(Self, X,Y).
 									!searchBurgler.
 									
 +!checksuccess :  see(Burg) <-     // .print("sikerült követnem");
+									.send(guard, tell, burglerat(X,Y));
 									!followBurgler.
 																	
