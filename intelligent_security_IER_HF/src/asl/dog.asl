@@ -1,7 +1,7 @@
 // Agent dog in project intelligent_security_IER_HF
 
 /* Initial beliefs and rules */
- //burgler(outside).
+
 
 /* Initial goals */
 
@@ -13,27 +13,21 @@
 
  
 +!checkBurgler: burgler(outside) <-
-						next(step);
+						next(step); // waits
 					!checkBurgler.
 						
-+!checkBurgler: not burgler(outside) <- //.print("bent van");
++!checkBurgler: not burgler(outside) <- 
 						.send(guard, tell, inside);
 						!signalburgler.										
-/*				
-@lg[atomic]
-+burgler(inside) : true
-   <- !signalburgler.
-   */
+
 
 					
-+!signalburgler : burgler(inside) <- 
-					next(step);
++!signalburgler : burgler(inside) <- .print("Woof Woof")
+					next(step); //waits
 					!signalburgler.
 					
-+!signalburgler :not burgler(inside) <-  //.print("nincs bent");
++!signalburgler :not burgler(inside) <- 
 					.send(guard, tell, outside);
 					!checkBurgler.
 				
 
-//+hello[source(A)] <- .print("Woooof,( I received 'hello' from )",A); 
-//.send(guard, tell, hello).

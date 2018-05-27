@@ -4,11 +4,9 @@
 
 /* Initial goals */
 
-//!start.
-
 /* Plans */
 
-//+!start : true <- .print("hello world.").
 
-+scare : true<- .print("scare");
-				scare(burgler).
++scare [source(A)]: true<- .print("BEEEEP");
+				scare(burgler);
+				-scare  [source(A)].

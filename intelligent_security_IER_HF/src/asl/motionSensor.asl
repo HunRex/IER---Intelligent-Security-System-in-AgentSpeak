@@ -18,5 +18,6 @@ pos(something, -1, -1).
 
 +!detect :something(inside)  <- ?pos(something, X, Y)
 								.send(guard, tell, somethingat(X,Y));
+								.print("Something is moving here!");
 								detectMotion(X, Y);
 								!detect.

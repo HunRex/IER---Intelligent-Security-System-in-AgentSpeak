@@ -1,15 +1,10 @@
 package intelligent_security_IER_HF;
 
-import static jason.asSyntax.ASSyntax.createLiteral;
-import static jason.asSyntax.ASSyntax.createNumber;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
@@ -23,7 +18,7 @@ import jason.environment.Environment;
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.GridWorldView;
 
-public class SecurityEnvironment extends Environment{
+public class SecurityEnvironment extends Environment {
 
 	public static final int GSize = 30; // grid size
 	public static final int Burg = 16; // Burgler code in grid model
@@ -104,7 +99,7 @@ public class SecurityEnvironment extends Environment{
 				final int x = (int) ((NumberTerm) action.getTerm(0)).solve();
 				final int y = (int) ((NumberTerm) action.getTerm(1)).solve();
 				model.detectMotion(ag, x, y);
-			}else if (action.equals(stay)) {
+			} else if (action.equals(stay)) {
 				// nothing
 			} else if (action.equals(scare)) {
 				model.scare(ag);
@@ -248,22 +243,21 @@ public class SecurityEnvironment extends Environment{
 			}
 		}
 
-		public void detectMotion(String ag, int x, int y) {
+		public void detectMotion(final String ag, final int x, final int y) {
 			// TODO Auto-generated method stub
-			for(final MotionSensor s: sensors) {
+			for (final MotionSensor s : sensors) {
 				if (s.id.equals(ag)) {
-						if(s.inside(Burgx, Burgy) && ((Burgx != x) || (Burgy != y))) {
-						logger.info("Something is moving here!");
-						addPercept(ag, Literal.parseLiteral("pos(something,"+ Burgx + "," + Burgy + ")" ));
+					if (s.inside(Burgx, Burgy) && ((Burgx != x) || (Burgy != y))) {
+						addPercept(ag, Literal.parseLiteral("pos(something," + Burgx + "," + Burgy + ")"));
 						if (!containsPercept(s.id, Literal.parseLiteral("something(inside)"))) {
 							addPercept(ag, Literal.parseLiteral("something(inside)"));
 						}
-						} else {
-							if (containsPercept(s.id, Literal.parseLiteral("something(inside)"))) {
-								removePercept(ag, Literal.parseLiteral("something(inside)"));
-							}
-							
+					} else {
+						if (containsPercept(s.id, Literal.parseLiteral("something(inside)"))) {
+							removePercept(ag, Literal.parseLiteral("something(inside)"));
 						}
+
+					}
 				}
 			}
 		}
@@ -404,10 +398,10 @@ public class SecurityEnvironment extends Environment{
 
 				}
 				add(Guard, Guardx, Guardy);
-				if(Math.abs(Guardx - Burgx) <= 1 && Math.abs(Guardy - Burgy) <= 1) {
+				if (Math.abs(Guardx - Burgx) <= 1 && Math.abs(Guardy - Burgy) <= 1) {
 					thread.stop();
 					addPercept("guard", Literal.parseLiteral("burgler_caught"));
-					
+
 				}
 			}
 		}
@@ -477,11 +471,11 @@ public class SecurityEnvironment extends Environment{
 			case SecurityEnvironment.Sensor:
 				drawSensor(g, x, y);
 				break;
-			default: 
+			default:
 				drawSecP(g, x, y);
 				break;
 			}
-			
+
 		}
 
 		public void drawSecP(final Graphics g, final int x, final int y) {
